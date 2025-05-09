@@ -41,3 +41,6 @@ luac.out
 
 .vscode/
 *.pdx
+
+.DS_Store/
+.DS_Store
