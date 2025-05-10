@@ -6,8 +6,6 @@ A short game for 1-bit-jam 6 for Playdate
 
 [**Download from itch.io**](https://mitya.itch.io/int32-doomsday-clock)
 
-Uses image that generated from font http://moorstation.org/typoasis/designers/steffmann/samples/b/benjamin.htm
-
 ## Screenshots
 
 ![screen-01](screens/1bit-jam-01.png)
