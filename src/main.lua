@@ -4,7 +4,7 @@ import "CoreLibs/sprites"
 import "CoreLibs/ui"
 import "CoreLibs/crank"
 
-local debug = true
+local debug = false
 local debugTime = false
 
 local gfx <const> = playdate.graphics
