@@ -1,0 +1,7 @@
+name=int32 Doomsday Clock
+author=mitya1234
+description=Try to prevent the doomsday
+bundleID=ru.mitya1234.int32clock
+version=0.1b
+buildNumber=110
+imagePath=assets/meta/

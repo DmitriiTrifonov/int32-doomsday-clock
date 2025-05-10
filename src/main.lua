@@ -4,6 +4,9 @@ import "CoreLibs/sprites"
 import "CoreLibs/ui"
 import "CoreLibs/crank"
 
+local debug = true
+local debugTime = false
+
 local gfx <const> = playdate.graphics
 
 local ticksPerRevolution = 6
@@ -22,7 +25,9 @@ local minute = second * 60
 local hour = minute * 60
 local day = hour * 24
 
-local timeToDetonate = 60 * second
+local initTime = 60 * second
+
+local timeToDetonate = initTime
 
 local days = 0
 local hours = 0
@@ -38,15 +43,37 @@ local minuteRotation = 0
 
 local timeSpeed = second
 
+local tickSoundPlayer, err = playdate.sound.fileplayer.new("assets/sound/ticking")
+print(err)
+
+local droneSoundPlayer, err = playdate.sound.fileplayer.new("assets/sound/drone")
+print(err)
+
 local introImage = gfx.image.new("assets/intro.png")
     assert( introImage )
 
 function setupGame()
     local gameData = playdate.datastore.read()
 
+    if debug == true then
+        print("save loading")
+        print(gameData.state)
+        print(gameData.currentTimeToDetonate)
+        print("save loaded")
+    end
+
     if gameData then
         state = gameData.currentState
         timeToDetonate = gameData.currentTimeToDetonate
+    end
+
+    if debug == true then
+        print("state", state)
+        print("timeToDetonate", timeToDetonate)
+    end
+
+    if not timeToDetonate then
+        timeToDetonate = initTime
     end
 
     local clockImage = gfx.image.new("assets/clock.png")
@@ -84,12 +111,21 @@ function setupGame()
     nuclearSprite:moveTo( 200, 140 )
     nuclearSprite:add()
     nuclearSprite:setVisible(false)
+
+    if debug then
+        print("volume",tickSoundPlayer:getVolume())
+        print("len", tickSoundPlayer:getLength())
+    end
+    
+    
 end
 
 setupGame()
 
 function playdate.update()
-    print(timeToDetonate)
+    if debug == true and debugTime == true then
+        print(timeToDetonate)
+    end
 
     local crankTicks = playdate.getCrankTicks(ticksPerRevolution)
 
@@ -106,6 +142,7 @@ function playdate.update()
         gfx.drawTextAligned("press A to start", 200, 200, kTextAlignment.center)
         if playdate.buttonIsPressed( playdate.kButtonA ) then
             state = "active"
+            tickSoundPlayer:play()
         end
         return
     end
@@ -114,8 +151,10 @@ function playdate.update()
         timeToDetonate = -2147483648
     end
 
-    if timeToDetonate < 0 then 
+    if state == "active" and timeToDetonate < 0 then 
         state = "game_over"
+        tickSoundPlayer:stop()
+        droneSoundPlayer:play()
         saveState()
     end
 
@@ -129,8 +168,10 @@ function playdate.update()
             if playdate.buttonIsPressed( playdate.kButtonA ) then
                 if playdate.buttonIsPressed( playdate.kButtonB ) then
                     state = "start"
+                    timeToDetonate = initTime
                     saveState()
                     nuclearSprite:setVisible(false)
+                    droneSoundPlayer:stop()
                     gfx.clear()
                     playdate.restart()
                 end
@@ -214,15 +255,22 @@ function playdate.update()
 end
 
 function saveState()
-    local gameData = {
-        currentState = state
-        currentTimeToDetonate = timeToDetonate
-    }
+    local gameData = {}
+    gameData.currentState = state
+    gameData.currentTimeToDetonate = timeToDetonate
+
+    if debug == true then
+        print("saving")
+        print(gameData.currentState)
+        print(gameData.currentTimeToDetonate)
+        print("saved")
+    end
 
     playdate.datastore.write(gameData)
 end
 
 function playdate.gameWillTerminate()
+    state = "start"
     saveState()
 end
 
